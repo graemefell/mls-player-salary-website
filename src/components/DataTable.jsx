@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx'
 
 const POSITIONS = [
   'Goalkeeper', 'Defender', 'Center-back', 'Right-back', 'Left-back',
-  'Defensive Midfield', 'Central Midfield', 'Right Midfield', 'Left Midfield',
+  'Defensive Midfield', 'Central Midfield', 'Midfielder', 'Right Midfield', 'Left Midfield',
   'Attacking Midfield', 'Right Wing', 'Left Wing',
   'Forward', 'Center Forward', 'Substitute', 'Unknown',
 ]

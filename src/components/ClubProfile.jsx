@@ -4,7 +4,7 @@ import { clubColors } from '../data/clubColors'
 function posColor(pos) {
   if (pos === 'Goalkeeper') return '#e84393'
   if (['Defender', 'Center-back', 'Right-back', 'Left-back'].includes(pos)) return '#00b4d8'
-  if (['Defensive Midfield', 'Central Midfield', 'Right Midfield', 'Left Midfield', 'Attacking Midfield'].includes(pos)) return '#06d6a0'
+  if (['Defensive Midfield', 'Central Midfield', 'Midfielder', 'Right Midfield', 'Left Midfield', 'Attacking Midfield'].includes(pos)) return '#06d6a0'
   if (['Right Wing', 'Left Wing', 'Forward', 'Center Forward'].includes(pos)) return '#ffd166'
   return '#636e72'
 }
@@ -12,14 +12,14 @@ function posColor(pos) {
 const POSITION_ORDER = {
   Goalkeeper: 0,
   Defender: 1, 'Center-back': 1, 'Right-back': 1, 'Left-back': 1,
-  'Defensive Midfield': 2, 'Central Midfield': 2, 'Right Midfield': 2, 'Left Midfield': 2, 'Attacking Midfield': 2,
+  'Defensive Midfield': 2, 'Central Midfield': 2, 'Midfielder': 2, 'Right Midfield': 2, 'Left Midfield': 2, 'Attacking Midfield': 2,
   'Right Wing': 3, 'Left Wing': 3, Forward: 3, 'Center Forward': 3,
 }
 
 const POS_GROUPS = [
   { key: 'GK', label: 'Goalkeepers', positions: ['Goalkeeper'], color: '#e84393' },
   { key: 'DEF', label: 'Defenders', positions: ['Defender', 'Center-back', 'Right-back', 'Left-back'], color: '#00b4d8' },
-  { key: 'MID', label: 'Midfielders', positions: ['Defensive Midfield', 'Central Midfield', 'Right Midfield', 'Left Midfield', 'Attacking Midfield'], color: '#06d6a0' },
+  { key: 'MID', label: 'Midfielders', positions: ['Defensive Midfield', 'Central Midfield', 'Midfielder', 'Right Midfield', 'Left Midfield', 'Attacking Midfield'], color: '#06d6a0' },
   { key: 'ATK', label: 'Attackers', positions: ['Right Wing', 'Left Wing', 'Forward', 'Center Forward'], color: '#ffd166' },
 ]
 
