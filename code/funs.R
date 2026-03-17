@@ -1,5 +1,92 @@
 #helper functions
 
+# parse 2025 PDF salary release ------------------------------------------------
+
+parse_2025_pdf <- function(pdf_path) {
+  txt <- pdf_text(pdf_path)
+  all_lines <- unlist(strsplit(txt, "\n"))
+  
+  # Remove header lines and very short lines
+  all_lines <- all_lines[nchar(trimws(all_lines)) > 5]
+  all_lines <- all_lines[!grepl("^\\s*First Name", all_lines)]
+  all_lines <- all_lines[!grepl("^\\s*Guaranteed Comp", all_lines)]
+  
+  # Each player spans 2 lines: line1 has name/team/position/start of salary,
+
+  # line2 has rest of salary and guaranteed comp.
+  # Combine consecutive pairs into single strings.
+  combined <- character()
+  i <- 1
+  while (i <= length(all_lines)) {
+    line1 <- all_lines[i]
+    # Check if next line is a continuation (starts with spaces or a digit/dollar)
+    if (i + 1 <= length(all_lines)) {
+      line2 <- all_lines[i + 1]
+      # Continuation lines typically start with spaces or digits or $
+      if (grepl("^\\s+[\\$0-9]", line2) || grepl("^[0-9]", trimws(line2))) {
+        combined <- c(combined, paste0(line1, trimws(line2)))
+        i <- i + 2
+        next
+      }
+    }
+    combined <- c(combined, line1)
+    i <- i + 1
+  }
+  
+  # Known positions to match
+  positions <- c("Attacking Midfield", "Center Forward", "Center-back",
+                  "Central Midfield", "Defensive Midfield", "Goalkeeper",
+                  "Left-back", "Left Midfield", "Left Wing",
+                  "Right-back", "Right Midfield", "Right Wing", "Substitute")
+  pos_pattern <- paste0("(", paste(positions, collapse = "|"), ")")
+  
+  records <- list()
+  for (line in combined) {
+    m <- regmatches(line, regexpr(pos_pattern, line))
+    if (length(m) == 0) next
+    
+    pos_start <- regexpr(pos_pattern, line)
+    before_pos <- substr(line, 1, pos_start - 1)
+    after_pos <- substr(line, pos_start + nchar(m), nchar(line))
+    
+    # Parse name and team from before_pos (fixed-width: ~cols 1-12, 14-25, 27-43)
+    # Use the whitespace pattern: fields separated by 2+ spaces
+    parts <- trimws(strsplit(trimws(before_pos), "\\s{2,}")[[1]])
+    if (length(parts) < 3) next
+    
+    first_name <- parts[1]
+    last_name <- parts[2]
+    team <- paste(parts[3:length(parts)], collapse = " ")
+    
+    # Extract salary figures from after_pos
+    salary_matches <- regmatches(after_pos,
+                                  gregexpr("\\$?[0-9,]+\\.\\d{2}", after_pos))[[1]]
+    
+    base_sal <- NA_real_
+    guar_comp <- NA_real_
+    if (length(salary_matches) >= 1) {
+      base_sal <- as.numeric(gsub("[\\$,]", "", salary_matches[1]))
+    }
+    if (length(salary_matches) >= 2) {
+      guar_comp <- as.numeric(gsub("[\\$,]", "", salary_matches[2]))
+    }
+    
+    records <- c(records, list(data.frame(
+      `First Name` = first_name,
+      `Last Name` = last_name,
+      Club = team,
+      Position_long = m,
+      `Base Salary` = base_sal,
+      `Guaranteed Comp` = guar_comp,
+      Name = paste(first_name, last_name, sep = " "),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )))
+  }
+  
+  bind_rows(records)
+}
+
 # scrape main page for latest data----------------------------------------------
 
 load_main_data <- function(){
