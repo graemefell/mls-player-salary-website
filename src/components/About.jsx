@@ -13,12 +13,6 @@ export default function About() {
           </a>.
         </p>
 
-        <h4><strong>Pages</strong></h4>
-        <p>
-          To visualize total guaranteed compensation by club by year, use the <strong>Time-Series</strong> page.
-          To view and export tabular data of player salaries, use the <strong>Data</strong> page.
-        </p>
-
         <h4><strong>Positions</strong></h4>
         <p>
           Player positions for years prior to 2024 are approximated. The original salary
@@ -28,7 +22,7 @@ export default function About() {
 
         <h4><strong>Latest Refresh</strong></h4>
         <p>
-          The data was last refreshed on: <em>— update this after each data pull —</em>
+          The data was last refreshed on: <em>October 1, 2025</em>
         </p>
 
         <h4><strong>Inspiration</strong></h4>
