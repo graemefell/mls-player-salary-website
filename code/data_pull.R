@@ -12,7 +12,9 @@ expand_position <- function(pos) {
     pos %in% c("GK", "l GK") ~ "Goalkeeper",
     pos %in% c("D", "D/F") ~ "Defender",
     pos %in% c("D-M", "D/M", "l D-M") ~ "Defensive Midfield",
-    pos %in% c("M", "MF", "rM", "aM", "yM") ~ "Central Midfield",
+    pos %in% c("MF", "aM") ~ "Attacking Midfield",
+    pos %in% c("M") ~ "Midfielder",
+    pos %in% c("rM", "yM") ~ "Central Midfield",
     pos %in% c("M-D", "M/D") ~ "Defensive Midfield",
     pos %in% c("M-F", "M/F") ~ "Attacking Midfield",
     pos %in% c("F-M", "F/M", "aF") ~ "Forward",
@@ -115,9 +117,26 @@ dta.pre.20 <- data.table::fread("input/salaries_2013-2021.csv") %>%
   mutate(Position = expand_position(Position)) %>%
   filter(!Year %in% c(2020,2021,2022,2023,2024,2025))
 
+# cross-year position consistency ----------------------------------------------
+# For players appearing before 2024, if they also appear in 2024+, use their
+# most recent (2025 preferred, then 2024) position for all years.
+
+dta.all <- bind_rows(dta.25, dta.24, dta.23, dta.22, dta.21, dta.20, dta.pre.20)
+
+pos_lookup <- dta.all %>%
+  filter(Year >= 2024) %>%
+  arrange(desc(Year)) %>%
+  distinct(Name, .keep_all = TRUE) %>%
+  select(Name, Position_recent = Position)
+
+dta.all <- dta.all %>%
+  left_join(pos_lookup, by = "Name") %>%
+  mutate(Position = ifelse(!is.na(Position_recent) & Year < 2024, Position_recent, Position)) %>%
+  select(-Position_recent)
+
 # clean and append  ------------------------------------------------------------
 
-dta.table <- bind_rows(dta.25, dta.24, dta.23, dta.22, dta.21, dta.20, dta.pre.20) %>%
+dta.table <- dta.all %>%
   select(Name, Club, Year, Position, `Base Salary`, `Guaranteed Comp`) %>%
   mutate(`Base Salary` = scales::dollar(`Base Salary`)) %>%
   mutate(`Guaranteed Comp` = scales::dollar(`Guaranteed Comp`)) %>%
@@ -132,7 +151,7 @@ dta.table <- bind_rows(dta.25, dta.24, dta.23, dta.22, dta.21, dta.20, dta.pre.2
   mutate(Club = ifelse(Club == "New England Revolutio","New England Revolution", Club)) %>%
  mutate(Position = ifelse(is.na(Position) | Position == "Nathan-Dylan", "Unknown", Position)) 
 
-dta.chart <- bind_rows(dta.25, dta.24, dta.23, dta.22, dta.21,dta.20, dta.pre.20) %>%
+dta.chart <- dta.all %>%
   select(Name, Club, Year, Position, `Base Salary`, `Guaranteed Comp`) %>%
   mutate(Club = trimws(Club)) %>%
   mutate(Club = ifelse(Club %in% c("MLS Pool", "Major League Soccer", "Retired", "", "Without a Club"),
